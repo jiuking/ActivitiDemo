@@ -6,8 +6,10 @@ import java.util.List;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricIdentityLink;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.Task;
 import org.junit.Test;
 
@@ -75,4 +77,45 @@ public class UserProcessTest {
         }  
 		
     }  
+    
+    @Test  
+    public void findGroupCandidate() throws Exception{  
+    	System.out.println("asdf");
+    	// 任务办理人  
+    	startProcess();
+        //任务ID  
+        String taskId = "9";  
+        List<IdentityLink> list = processEngine.getTaskService()//  
+                        .getIdentityLinksForTask(taskId);  
+  
+        if(list!=null && list.size()>0){  
+            for(IdentityLink identityLink:list){  
+                System.out.println("任务ID："+identityLink.getTaskId());  
+                System.out.println("流程实例ID："+identityLink.getProcessInstanceId());  
+                System.out.println("用户ID："+identityLink.getUserId());  
+                System.out.println("工作流角色ID："+identityLink.getGroupId());  
+                System.out.println("#########################################");  
+            }  
+        }  
+    }  
+    /**查询历史的组任务列表
+     * @throws Exception */  
+    @Test  
+    public void findHistoryGroupCandidate() throws Exception{  
+    	findPersonalTaskList();
+    	System.out.println("历史的组");
+        //流程实例ID  
+        String processInstanceId = "5";  
+        List<HistoricIdentityLink> list = processEngine.getHistoryService()  
+                        .getHistoricIdentityLinksForProcessInstance(processInstanceId);  
+        if(list!=null && list.size()>0){  
+            for(HistoricIdentityLink identityLink:list){  
+                System.out.println("任务ID："+identityLink.getTaskId());  
+                System.out.println("流程实例ID："+identityLink.getProcessInstanceId());  
+                System.out.println("用户ID："+identityLink.getUserId());  
+                System.out.println("工作流角色ID："+identityLink.getGroupId());  
+                System.out.println("#########################################");  
+            }  
+        }  
+    }     
 }
