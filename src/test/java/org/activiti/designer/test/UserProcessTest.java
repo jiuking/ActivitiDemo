@@ -1,6 +1,7 @@
 package org.activiti.designer.test;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import org.activiti.engine.ProcessEngine;
@@ -15,7 +16,8 @@ import org.junit.Test;
 
 public class UserProcessTest {
 	
-	private String filename = "E:\\workspace\\ActivitiDemo\\src\\main\\resources\\Activiti\\activitiDemo.bpmn";
+	private String filename = "C:\\Users\\Administrator\\git\\ActivitiDemo\\src\\main\\resources\\Activiti\\activitiDemo.bpmn";
+	InputStream file = ClassLoader.getSystemClassLoader().getResourceAsStream("\\Activiti\\activitiDemo.bpmn");
 
 	//流程引擎对象  
     ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
@@ -24,13 +26,13 @@ public class UserProcessTest {
 	public void startProcess() throws Exception {
 		Deployment deployment = processEngine.getRepositoryService()//  
                 .createDeployment()//创建部署对象  
-                .addInputStream("myProcess.bpmn20.xml", new FileInputStream(filename))//部署加载资源文件  
+                .addInputStream("myProcess.bpmn20.xml", file)//部署加载资源文件  
                 .deploy();  
 //		System.out.println("部署ID："+deployment.getId()); 
 		//2.启动流程  
         ProcessInstance pi = processEngine.getRuntimeService()//  
                 .startProcessInstanceByKey("myProcess");  
-//        System.out.println("pid:" + pi.getId());  
+        System.out.println("pid:" + pi.getId());  
 	}
 	
 	/**查询我的个人任务,没有执行结果*/  
