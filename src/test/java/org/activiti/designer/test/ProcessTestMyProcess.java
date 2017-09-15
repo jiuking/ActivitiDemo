@@ -31,11 +31,23 @@ public class ProcessTestMyProcess {
 		RepositoryService repositoryService = activitiRule.getRepositoryService();
 		repositoryService.createDeployment().addInputStream("myProcess.bpmn20.xml",
 				new FileInputStream(filename)).deploy();
+		
+        //加载配置文件activiti.cfg.xml，创建引擎，如果出现null，多半是加载路径不是根目录。
+	    //获取配置文件后，引擎开始创建数据库。
 		ProcessEngine engine = ProcessEngines.getDefaultProcessEngine();
+		//获取流程储存服务组件  部署流程，只要是符合BPMN2规范的XML文件，理论上都可以被ACTIVITI部署
+//		engine.getRepositoryService().createDeployment().addInputStream("myProcess.bpmn20.xml", 
+//				new FileInputStream(filename)).deploy();
+		//获取运行时服务组件
 		RuntimeService runtimeService = activitiRule.getRuntimeService();
 		runtimeService.startProcessInstanceByKey("myProcess");
 		Map<String, Object> variableMap = new HashMap<String, Object>();
 		TaskService task = engine.getTaskService();
+		
+		List<Task> lists = task.createTaskQuery().list();
+		for(Task tas : lists){
+			System.out.println(tas.getName());
+		}
 		
 		Task ts = task.createTaskQuery().singleResult();
 		System.out.println(ts.getName()+"==="+ts.getId()+"代办人："+ts.getAssignee()+"候选人"+ts.getProcessInstanceId());
@@ -45,7 +57,9 @@ public class ProcessTestMyProcess {
 		
 		ts = task.createTaskQuery().singleResult();
 		System.out.println(ts.getName()+"==="+ts.getId()+"实例id："+ts.getProcessInstanceId());
-		task.complete(ts.getId());
+		variables.put("endProcess", 1);//将数据库调整为MySQL的时候，必须要完成所有流程，设置为0的话，跳转到领导审批，没有完成这个流程，重新执行task.createTaskQuery().singleResult();所以会报org.activiti.engine.ActivitiException: Query return 4 results instead of max 1
+		//但，h2数据库则没有这个问题。将endProcess设置为0
+		task.complete(ts.getId(),variables);
 		
 		String processInstanceId="5";  
 	    List<HistoricTaskInstance> list = engine.getHistoryService()//与历史数据（历史表）相关的service  
@@ -60,18 +74,18 @@ public class ProcessTestMyProcess {
 	        }  
 	    }   
 		
-		ts = task.createTaskQuery().singleResult();
-		System.out.println(ts.getName()+"==="+ts.getId());
-		task.complete(ts.getId());
+//		ts = task.createTaskQuery().singleResult();
+//		System.out.println(ts.getName()+"==="+ts.getId());
+//		task.complete(ts.getId());
 		
 //		ts = task.createTaskQuery().singleResult();
 //		System.out.println(ts.getName()+"==="+ts.getId());
 		
 		variableMap.put("name", "Activiti");
-		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("myProcess", variableMap);
-		assertNotNull(processInstance.getId());
-		System.out.println("id " + processInstance.getId() + " "
-				+ processInstance.getProcessDefinitionId());
+//		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("myProcess", variableMap);
+//		assertNotNull(processInstance.getId());
+//		System.out.println("id " + processInstance.getId() + " "
+//				+ processInstance.getProcessDefinitionId());
 		
 	}
 }
