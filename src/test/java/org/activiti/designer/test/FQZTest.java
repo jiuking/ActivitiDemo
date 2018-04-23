@@ -49,60 +49,15 @@ public class FQZTest {
         System.out.println("流程定义的ID："+pi.getProcessDefinitionId());  
     }  
       
-    /**查询我的个人任务*/  
-    @Test  
-    public void findPersonalTaskList(){  
-//    	deployementAndStartProcess();
-//    	claim();
-        //任务办理人  
-        String assignee = "唐僧";  
-        List<Task> list = processEngine.getTaskService()//  
-                        .createTaskQuery()//  
-                        .taskAssignee(assignee)//个人任务的查询  
-                        .list();  
-        if(list!=null && list.size()>0){  
-            for(Task task:list){  
-                System.out.println("任务ID："+task.getId());  
-                System.out.println("任务的办理人："+task.getAssignee());  
-                System.out.println("任务名称："+task.getName());  
-                System.out.println("任务的创建时间："+task.getCreateTime());  
-                System.out.println("流程实例ID："+task.getProcessInstanceId());  
-                System.out.println("#######################################");  
-            }  
-        }  
-    }  
-      
-    /**查询组任务*/  
-    @Test  
-    public void findGroupTaskList(){  
-        //任务办理人  
-    	deployementAndStartProcess();
-        String candidateUser = "猪八戒";  
-        List<Task> list = processEngine.getTaskService()//  
-                        .createTaskQuery()//  
-                        .taskCandidateUser(candidateUser)//参与者，组任务查询  
-                        .list();  
-        if(list!=null && list.size()>0){  
-            for(Task task:list){  
-                System.out.println("任务ID："+task.getId());  
-                System.out.println("任务的办理人："+task.getAssignee());  
-                System.out.println("任务名称："+task.getName());  
-                System.out.println("任务的创建时间："+task.getCreateTime());  
-                System.out.println("流程实例ID："+task.getProcessInstanceId());  
-                System.out.println("#######################################");  
-            }  
-        }  
-    }  
-      
     /**完成任务*/  
     @Test  
     public void completeTask(){  
         //任务ID  
     	
     	Map<String,Object> map = new HashMap<String, Object>();
-        String taskId = "12508";  
+        String taskId = "10006";  
         map.put("testInteger", 1);
-        map.put("end", 1);
+        map.put("end", -1);
         processEngine.getTaskService()//  
                         .complete(taskId,map);  
         System.out.println("完成任务："+taskId);  
