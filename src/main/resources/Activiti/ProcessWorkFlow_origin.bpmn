@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="CaseProcess" name="案件处理流程" isExecutable="true">
+    <documentation>反欺诈案件处理流程</documentation>
+    <startEvent id="startevent1" name="Start"></startEvent>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <userTask id="案件分配员ID" name="案件分配员">
+      <extensionElements>
+        <activiti:taskListener event="create" class="CaseAllotAssigneeListener"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask id="案件调查员Id" name="案件调查员" activiti:assignee="${searchManager}"></userTask>
+    <userTask id="案件初审员Id" name="案件初审员">
+      <extensionElements>
+        <activiti:executionListener event="end" class="CaseFristResultListenner"></activiti:executionListener>
+        <activiti:taskListener event="create" class="CaseFristAuditAssigneeListenner"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow3" name="提交" sourceRef="案件调查员Id" targetRef="案件初审员Id"></sequenceFlow>
+    <userTask id="案件终审员Id" name="案件终审员">
+      <extensionElements>
+        <activiti:executionListener event="end" class="CaseLastResultListenner"></activiti:executionListener>
+        <activiti:taskListener event="create" class="CaseFinalJudgmentAssigneeListenner"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="终审节点id" name="终审节点" default="复审驳回Id"></exclusiveGateway>
+    <sequenceFlow id="审核Id" name="审核" sourceRef="案件终审员Id" targetRef="终审节点id"></sequenceFlow>
+    <sequenceFlow id="终审通过Id" name="终审通过" sourceRef="终审节点id" targetRef="endevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${lastResult==092000}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="案件分配员ID"></sequenceFlow>
+    <exclusiveGateway id="初审意见id" name="初审意见" default="初审驳回ID"></exclusiveGateway>
+    <sequenceFlow id="初审通过id" name="初审通过" sourceRef="初审意见id" targetRef="案件终审员Id">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${fristResult==091000}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="初审id" name="初审" sourceRef="案件初审员Id" targetRef="初审意见id"></sequenceFlow>
+    <exclusiveGateway id="标记案件" name="标记案件id" default="有效案件ID"></exclusiveGateway>
+    <sequenceFlow id="标记案件id" name="标记" sourceRef="案件分配员ID" targetRef="标记案件"></sequenceFlow>
+    <endEvent id="endevent2" name="End"></endEvent>
+    <sequenceFlow id="标记无效案件id" name="无效案件" sourceRef="标记案件" targetRef="endevent2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${caseSignNo==090000}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="有效案件ID" name="有效案件" sourceRef="标记案件" targetRef="案件调查员Id"></sequenceFlow>
+    <exclusiveGateway id="员工审查" name="员工审查id" default="员工存在ID">
+      <extensionElements>
+        <activiti:executionListener event="start" class="CaseEmpExistListenner"></activiti:executionListener>
+      </extensionElements>
+    </exclusiveGateway>
+    <sequenceFlow id="初审驳回ID" name="初审驳回" sourceRef="初审意见id" targetRef="员工审查"></sequenceFlow>
+    <sequenceFlow id="员工存在ID" name="员工存在" sourceRef="员工审查" targetRef="案件调查员Id"></sequenceFlow>
+    <sequenceFlow id="复审驳回Id" name="复审驳回" sourceRef="终审节点id" targetRef="员工审查"></sequenceFlow>
+    <sequenceFlow id="调查员不存在ID" name="调查员不存在" sourceRef="员工审查" targetRef="案件分配员ID">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${CaseEmpExist==093000}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CaseProcess">
+    <bpmndi:BPMNPlane bpmnElement="CaseProcess" id="BPMNPlane_CaseProcess">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="199.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="830.0" y="420.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="案件分配员ID" id="BPMNShape_案件分配员ID">
+        <omgdc:Bounds height="55.0" width="105.0" x="164.0" y="114.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="案件调查员Id" id="BPMNShape_案件调查员Id">
+        <omgdc:Bounds height="55.0" width="105.0" x="350.0" y="206.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="案件初审员Id" id="BPMNShape_案件初审员Id">
+        <omgdc:Bounds height="55.0" width="105.0" x="350.0" y="323.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="案件终审员Id" id="BPMNShape_案件终审员Id">
+        <omgdc:Bounds height="55.0" width="105.0" x="630.0" y="322.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="终审节点id" id="BPMNShape_终审节点id">
+        <omgdc:Bounds height="40.0" width="40.0" x="827.0" y="329.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="初审意见id" id="BPMNShape_初审意见id">
+        <omgdc:Bounds height="40.0" width="40.0" x="520.0" y="330.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="标记案件" id="BPMNShape_标记案件">
+        <omgdc:Bounds height="40.0" width="40.0" x="196.0" y="213.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="199.0" y="322.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="员工审查" id="BPMNShape_员工审查">
+        <omgdc:Bounds height="40.0" width="40.0" x="520.0" y="213.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="402.0" y="261.0"></omgdi:waypoint>
+        <omgdi:waypoint x="402.0" y="323.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="24.0" x="390.0" y="279.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="审核Id" id="BPMNEdge_审核Id">
+        <omgdi:waypoint x="735.0" y="349.0"></omgdi:waypoint>
+        <omgdi:waypoint x="827.0" y="349.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="24.0" x="745.0" y="349.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="终审通过Id" id="BPMNEdge_终审通过Id">
+        <omgdi:waypoint x="847.0" y="369.0"></omgdi:waypoint>
+        <omgdi:waypoint x="847.0" y="420.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="850.0" y="379.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="216.0" y="75.0"></omgdi:waypoint>
+        <omgdi:waypoint x="216.0" y="114.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="初审通过id" id="BPMNEdge_初审通过id">
+        <omgdi:waypoint x="560.0" y="350.0"></omgdi:waypoint>
+        <omgdi:waypoint x="630.0" y="349.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="570.0" y="350.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="初审id" id="BPMNEdge_初审id">
+        <omgdi:waypoint x="455.0" y="350.0"></omgdi:waypoint>
+        <omgdi:waypoint x="520.0" y="350.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="24.0" x="465.0" y="350.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="标记案件id" id="BPMNEdge_标记案件id">
+        <omgdi:waypoint x="216.0" y="169.0"></omgdi:waypoint>
+        <omgdi:waypoint x="216.0" y="213.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="24.0" x="220.0" y="179.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="标记无效案件id" id="BPMNEdge_标记无效案件id">
+        <omgdi:waypoint x="216.0" y="253.0"></omgdi:waypoint>
+        <omgdi:waypoint x="216.0" y="322.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="220.0" y="279.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="有效案件ID" id="BPMNEdge_有效案件ID">
+        <omgdi:waypoint x="236.0" y="233.0"></omgdi:waypoint>
+        <omgdi:waypoint x="350.0" y="233.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="250.0" y="220.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="初审驳回ID" id="BPMNEdge_初审驳回ID">
+        <omgdi:waypoint x="540.0" y="330.0"></omgdi:waypoint>
+        <omgdi:waypoint x="540.0" y="253.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="545.0" y="291.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="员工存在ID" id="BPMNEdge_员工存在ID">
+        <omgdi:waypoint x="520.0" y="233.0"></omgdi:waypoint>
+        <omgdi:waypoint x="455.0" y="233.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="467.0" y="213.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="复审驳回Id" id="BPMNEdge_复审驳回Id">
+        <omgdi:waypoint x="847.0" y="329.0"></omgdi:waypoint>
+        <omgdi:waypoint x="846.0" y="233.0"></omgdi:waypoint>
+        <omgdi:waypoint x="560.0" y="233.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="709.0" y="214.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="调查员不存在ID" id="BPMNEdge_调查员不存在ID">
+        <omgdi:waypoint x="540.0" y="213.0"></omgdi:waypoint>
+        <omgdi:waypoint x="539.0" y="141.0"></omgdi:waypoint>
+        <omgdi:waypoint x="269.0" y="141.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="72.0" x="391.0" y="121.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
